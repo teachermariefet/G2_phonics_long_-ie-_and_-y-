@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phonics Fun: Long I Sound (/aɪ/)</title>
+    <!-- Google Fonts: Balsamiq Sans -->
+    <link href="https://fonts.googleapis.com/css2?family=Balsamiq+Sans:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            font-family: 'Balsamiq Sans', cursive, sans-serif;
+            background: #70a1ff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #game-container {
+            width: 100%;
+            height: 100%;
+            max-width: 1280px;
+            max-height: 800px;
+            position: relative;
+            background-color: #f1f2f6;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Screen Common Styling */
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            transition: opacity 0.3s ease;
+        }
+
+        .screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .screen.active {
+            opacity: 1;
+            z-index: 10;
+        }
+
+        /* Home Screen */
+        #home-screen {
+            background-color: #ff9f43;
+            background-image: url('homescreen.png'), linear-gradient(135deg, #ff9f43 0%, #ff6b6b 100%);
+        }
+
+        .title-card {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 40px 60px;
+            border-radius: 30px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            text-align: center;
+            border: 6px solid #fff;
+            max-width: 800px;
+        }
+
+        .title-card h1 {
+            font-size: 3.5rem;
+            color: #2ed573;
+            margin: 0 0 15px 0;
+            text-shadow: 2px 2px 0px #2f3542;
+        }
+
+        .title-card p {
+            font-size: 1.5rem;
+            color: #57606f;
+            margin: 0 0 30px 0;
+        }
+
+        /* Game Screen */
+        #game-screen {
+            background-color: #70a1ff;
+            background-image: url('gamescreen.png'), linear-gradient(135deg, #70a1ff 0%, #1e90ff 100%);
+            justify-content: flex-start;
+        }
+
+        /* HUD */
+        .hud {
+            width: 100%;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.85);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border-bottom: 4px solid #f1f2f6;
+            z-index: 20;
+        }
+
+        .hud-item {
+            font-size: 2.2rem;
+            font-weight: bold;
+            color: #2f3542;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .hud-item span {
+            color: #ff4757;
+        }
+
+        /* Top Controls */
+        .top-controls {
+            display: flex;
+            gap: 15px;
+        }
+
+        /* Main Game Content Area */
+        .game-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            padding: 20px;
+            gap: 40px;
+        }
+
+        .audio-prompt-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .speaker-btn {
+            background: #ffa502;
+            border: 6px solid #fff;
+            border-radius: 50%;
+            width: 130px;
+            height: 130px;
+            font-size: 3.5rem;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: transform 0.1s ease, background 0.2s;
+        }
+
+        .speaker-btn:hover {
+            transform: scale(1.05);
+            background: #ff7f50;
+        }
+
+        .speaker-btn:active {
+            transform: scale(0.95);
+        }
+
+        .speaker-label {
+            font-size: 1.6rem;
+            color: #fff;
+            background: rgba(0,0,0,0.4);
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+
+        /* Choices Container */
+        .choices-container {
+            display: flex;
+            gap: 50px;
+            width: 100%;
+            max-width: 900px;
+            justify-content: center;
+        }
+
+        .choice-box {
+            flex: 1;
+            height: 220px;
+            background: #ffffff;
+            border: 8px solid #ff4757;
+            border-radius: 35px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 4.5rem;
+            font-weight: bold;
+            color: #2f3542;
+            cursor: pointer;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            transition: transform 0.15s ease, background-color 0.2s, border-color 0.2s;
+            text-transform: lowercase;
+        }
+
+        .choice-box:hover {
+            transform: translateY(-8px) scale(1.02);
+            border-color: #ff6b81;
+            background: #fff9f9;
+        }
+
+        .choice-box:active {
+            transform: translateY(2px);
+        }
+
+        /* Feedback States */
+        .choice-box.correct {
+            background-color: #2ed573 !important;
+            border-color: #26af5f !important;
+            color: white !important;
+            animation: bounce 0.5s;
+        }
+
+        .choice-box.incorrect {
+            background-color: #ff4757 !important;
+            border-color: #c0392b !important;
+            color: white !important;
+            animation: shake 0.4s;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-12px); }
+            40%, 80% { transform: translateX(12px); }
+        }
+
+        /* Buttons (Play, Replay, Fullscreen, Play Again) */
+        .btn-primary {
+            background-color: #2ed573;
+            color: white;
+            border: 6px solid #fff;
+            padding: 20px 60px;
+            font-size: 2.2rem;
+            font-family: 'Balsamiq Sans', cursive, sans-serif;
+            font-weight: bold;
+            border-radius: 40px;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+            transition: transform 0.1s ease, background 0.2s;
+        }
+
+        .btn-primary:hover {
+            background-color: #26af5f;
+            transform: scale(1.05);
+        }
+
+        .btn-primary:active {
+            transform: scale(0.95);
+        }
+
+        .btn-icon {
+            background: #fff;
+            border: 4px solid #70a1ff;
+            color: #2f3542;
+            padding: 10px 20px;
+            font-size: 1.2rem;
+            font-family: 'Balsamiq Sans', cursive, sans-serif;
+            font-weight: bold;
+            border-radius: 15px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        .btn-icon:hover {
+            background: #f1f2f6;
+            transform: scale(1.05);
+        }
+
+        /* End Screen */
+        #end-screen {
+            background: #ffa502;
+            background-image: linear-gradient(135deg, #ffa502 0%, #ff6b81 100%);
+        }
+
+        .end-card {
+            background: white;
+            padding: 50px 70px;
+            border-radius: 35px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+            text-align: center;
+            border: 8px solid #fff;
+            max-width: 700px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 25px;
+        }
+
+        .end-card h2 {
+            font-size: 3.5rem;
+            color: #ff4757;
+            margin: 0;
+            text-shadow: 2px 2px 0px #f1f2f6;
+        }
+
+        .final-score-display {
+            font-size: 2.5rem;
+            color: #2f3542;
+            font-weight: bold;
+        }
+
+        .final-score-display span {
+            color: #2ed573;
+            font-size: 3rem;
+        }
+
+        /* Responsive adjustments for SmartBoards */
+        @media(max-width: 1024px) {
+            .title-card h1 { font-size: 2.8rem; }
+            .choice-box { font-size: 3.5rem; height: 180px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        
+        <!-- HOME SCREEN -->
+        <div id="home-screen" class="screen active">
+            <div class="title-card">
+                <h1>Phonics Fun!</h1>
+                <p>Long <strong>I</strong> Sound (/aɪ/)</p>
+                <button class="btn-primary" id="start-btn">▶ PLAY GAME</button>
+            </div>
+        </div>
+
+        <!-- GAME SCREEN -->
+        <div id="game-screen" class="screen hidden">
+            <!-- HUD -->
+            <div class="hud">
+                <div class="hud-item">Score: <span id="score-val">0</span></div>
+                <div class="hud-item">Time: <span id="timer-val">60</span>s</div>
+                <div class="top-controls">
+                    <button class="btn-icon" id="replay-btn">🔊 Replay Audio</button>
+                    <button class="btn-icon" id="fullscreen-btn">⛶ Fullscreen</button>
+                </div>
+            </div>
+
+            <!-- Main Question Area -->
+            <div class="game-main">
+                <div class="audio-prompt-container">
+                    <button class="speaker-btn" id="speaker-main" title="Click to listen">👂</button>
+                    <div class="speaker-label">Listen & Tap the Correct Word!</div>
+                </div>
+
+                <div class="choices-container">
+                    <div class="choice-box" id="choice-0">pie</div>
+                    <div class="choice-box" id="choice-1">tie</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- END SCREEN -->
+        <div id="end-screen" class="screen hidden">
+            <div class="end-card">
+                <h2>Time's Up!</h2>
+                <div class="final-score-display">
+                    Your Score: <span id="final-score">0</span>
+                </div>
+                <button class="btn-primary" id="restart-btn">🔄 PLAY AGAIN</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Target Vocabulary List
+        const vocabulary = ['pie', 'lie', 'tie', 'die', 'cry', 'try', 'fly', 'sky'];
+
+        // Game State Variables
+        let score = 0;
+        let timeLeft = 60;
+        let timerInterval = null;
+        let isGameRunning = false;
+        let currentWord = '';
+        let lastWord = '';
+        let isAnswered = false;
+        let bgmAudio = null;
+
+        // DOM Elements
+        const homeScreen = document.getElementById('home-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const endScreen = document.getElementById('end-screen');
+        const startBtn = document.getElementById('start-btn');
+        const restartBtn = document.getElementById('restart-btn');
+        const scoreVal = document.getElementById('score-val');
+        const timerVal = document.getElementById('timer-val');
+        const replayBtn = document.getElementById('replay-btn');
+        const speakerMain = document.getElementById('speaker-main');
+        const fullscreenBtn = document.getElementById('fullscreen-btn');
+        const choice0 = document.getElementById('choice-0');
+        const choice1 = document.getElementById('choice-1');
+
+        // Audio Management with Graceful Fallbacks (Web Audio API for SFX & SpeechSynthesis for Phonics)
+        const audioCache = {};
+
+        // Preload external audio files if available
+        vocabulary.forEach(word => {
+            const audio = new Audio(`${word}.mp3`);
+            audio.preload = 'auto';
+            audioCache[word] = audio;
+        });
+
+        function playWordAudio(word) {
+            const audioObj = audioCache[word];
+            if (audioObj) {
+                audioObj.currentTime = 0;
+                audioObj.play().catch(() => {
+                    // Fallback to SpeechSynthesis if mp3 is missing or blocked
+                    speakWordFallback(word);
+                });
+            } else {
+                speakWordFallback(word);
+            }
+        }
+
+        function speakWordFallback(word) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(word);
+                utterance.lang = 'en-US';
+                utterance.rate = 0.8; // Clear slow pronunciation for young learners
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        // Web Audio API Sound Effects (Chime & Buzzer)
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playChimeSound() {
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            const now = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(523.25, now); // C5
+            osc.frequency.setValueAtTime(659.25, now + 0.1); // E5
+            osc.frequency.setValueAtTime(783.99, now + 0.2); // G5
+            osc.frequency.setValueAtTime(1046.50, now + 0.3); // C6
+
+            gain.gain.setValueAtTime(0.15, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            osc.start(now);
+            osc.stop(now + 0.6);
+        }
+
+        function playBuzzerSound() {
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            const now = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(150, now);
+            osc.frequency.setValueAtTime(110, now + 0.15);
+
+            gain.gain.setValueAtTime(0.15, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            osc.start(now);
+            osc.stop(now + 0.35);
+        }
+
+        // Background Music simulation / control (10% volume pleasant loop or synthesized ambient chime)
+        function startBGM() {
+            // Optional continuous background ambiance or music container
+        }
+
+        function stopBGM() {
+            // Stop BGM if any
+        }
+
+        // Screen Navigation Functions
+        function showScreen(screen) {
+            [homeScreen, gameScreen, endScreen].forEach(s => {
+                s.classList.remove('active');
+                s.classList.add('hidden');
+            });
+            screen.classList.remove('hidden');
+            screen.classList.add('active');
+        }
+
+        // Start Game
+        function startGame() {
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            score = 0;
+            timeLeft = 60;
+            scoreVal.textContent = score;
+            timerVal.textContent = timeLeft;
+            isGameRunning = true;
+            lastWord = '';
+
+            showScreen(gameScreen);
+            nextQuestion();
+
+            // Start Timer
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                if (!isGameRunning) return;
+                timeLeft--;
+                timerVal.textContent = timeLeft;
+                if (timeLeft <= 0) {
+                    endGame();
+                }
+            }, 1000);
+        }
+
+        // Next Question Logic
+        function nextQuestion() {
+            if (!isGameRunning) return;
+            isAnswered = false;
+
+            // Reset box styles
+            [choice0, choice1].forEach(box => {
+                box.classList.remove('correct', 'incorrect');
+                box.style.pointerEvents = 'auto';
+            });
+
+            // Select random word avoiding back-to-back repetition
+            let availableWords = vocabulary.filter(w => w !== lastWord);
+            currentWord = availableWords[Math.floor(Math.random() * availableWords.length)];
+            lastWord = currentWord;
+
+            // Select one incorrect word
+            let incorrectPool = vocabulary.filter(w => w !== currentWord);
+            let incorrectWord = incorrectPool[Math.floor(Math.random() * incorrectPool.length)];
+
+            // Randomize position (0 or 1)
+            let choices = [currentWord, incorrectWord];
+            if (Math.random() < 0.5) {
+                choices.reverse();
+            }
+
+            choice0.textContent = choices[0];
+            choice1.textContent = choices[1];
+
+            choice0.dataset.word = choices[0];
+            choice1.dataset.word = choices[1];
+
+            // Play audio automatically
+            playWordAudio(currentWord);
+        }
+
+        // Handle Choice Selection
+        function handleChoiceClick(selectedBox, selectedWord) {
+            if (!isGameRunning || isAnswered) return;
+
+            if (selectedWord === currentWord) {
+                // Correct Answer
+                isAnswered = true;
+                score++;
+                scoreVal.textContent = score;
+                playChimeSound();
+                selectedBox.classList.add('correct');
+
+                // Disable further clicks until next question
+                [choice0, choice1].forEach(box => box.style.pointerEvents = 'none');
+
+                setTimeout(() => {
+                    if (isGameRunning) {
+                        nextQuestion();
+                    }
+                }, 900);
+            } else {
+                // Incorrect Answer
+                playBuzzerSound();
+                selectedBox.classList.add('incorrect');
+                setTimeout(() => {
+                    selectedBox.classList.remove('incorrect');
+                }, 500);
+                // Allow player to try again without deducting points
+            }
+        }
+
+        // End Game
+        function endGame() {
+            isGameRunning = false;
+            clearInterval(timerInterval);
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+            }
+            stopBGM();
+            document.getElementById('final-score').textContent = score;
+            showScreen(endScreen);
+        }
+
+        // Event Listeners
+        startBtn.addEventListener('click', startGame);
+        restartBtn.addEventListener('click', startGame);
+
+        choice0.addEventListener('click', () => handleChoiceClick(choice0, choice0.dataset.word));
+        choice1.addEventListener('click', () => handleChoiceClick(choice1, choice1.dataset.word));
+
+        replayBtn.addEventListener('click', () => {
+            if (isGameRunning && currentWord) {
+                playWordAudio(currentWord);
+            }
+        });
+
+        speakerMain.addEventListener('click', () => {
+            if (isGameRunning && currentWord) {
+                playWordAudio(currentWord);
+            }
+        });
+
+        // Fullscreen Toggle Control
+        fullscreenBtn.addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.log(`Error attempting to enable fullscreen: ${err.message}`);
+                });
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        });
+
+        // Prevent accidental text selection and touch scroll bugs on touch devices
+        document.addEventListener('touchmove', function (e) {
+            if (e.scale !== 1) { e.preventDefault(); }
+        }, { passive: false });
+    </script>
+</body>
+</html>
